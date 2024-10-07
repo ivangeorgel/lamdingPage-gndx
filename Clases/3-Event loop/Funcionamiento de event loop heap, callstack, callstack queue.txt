@@ -1,0 +1,65 @@
+La imagen que has subido parece representar el **Event Loop** en JavaScript y cómo funciona junto con el **Call Stack**, el **Heap**, las **Web APIs**, las **Microtasks Queue**, y la **Callback Queue**. Te lo explicaré paso a paso para que entiendas cómo funciona:
+
+### 1. **Heap:**
+   El **Heap** es donde JavaScript guarda los objetos y variables. Es un área de memoria no estructurada. Cuando creas un objeto o una variable compleja (como arrays o funciones), se almacenan aquí. En la imagen, ves diferentes bloques de colores que representan la memoria ocupada por distintos objetos o variables.
+
+### 2. **Call Stack:**
+   El **Call Stack** es una pila de funciones que se ejecutan en orden. JavaScript es **single-threaded**, lo que significa que solo puede ejecutar una cosa a la vez. Cada vez que llamas a una función, se coloca en el tope del **Call Stack**.
+
+   - Cada bloque en el **Call Stack** que dice `fn()` representa una función que ha sido llamada pero no ha terminado de ejecutarse.
+   - Cuando una función termina, se elimina del **Call Stack**.
+
+### 3. **Web APIs:**
+   Las **Web APIs** son un conjunto de funcionalidades proporcionadas por el navegador (como el DOM, las solicitudes HTTP y los eventos). Si una función tiene operaciones asíncronas (como un `setTimeout`, un `fetch`, o eventos como `onClick` o `onLoad`), no se quedan en el **Call Stack**.
+
+   - Cuando una función asíncrona es invocada (por ejemplo, una petición HTTP o una interacción con el DOM), se delega a las **Web APIs**.
+   - Mientras la función asíncrona está esperando (por ejemplo, una solicitud HTTP está esperando respuesta), el **Call Stack** sigue ejecutando otras funciones.
+
+### 4. **MicroTasks Queue (Cola de Microtareas):**
+   Esta cola se utiliza para manejar tareas como las **promesas**. Una vez que el **Call Stack** se vacía (es decir, cuando no hay ninguna función en ejecución), las tareas en la **MicroTasks Queue** se mueven al **Call Stack**.
+
+   - Las **promesas** resueltas (o rechazadas) entran en la **MicroTasks Queue**.
+   - Se ejecutan antes que las tareas en la **Callback Queue**.
+
+### 5. **Callback Queue (Cola de Callbacks):**
+   La **Callback Queue** contiene tareas como los eventos (`onClick`, `onLoad`, etc.) o los temporizadores (`setTimeout`). Estas tareas esperan hasta que el **Call Stack** esté vacío.
+
+   - Una vez que el **Call Stack** está libre, el **Event Loop** mueve una tarea de la **Callback Queue** al **Call Stack**.
+   - Así es como se maneja la ejecución de funciones asíncronas.
+
+### 6. **Event Loop:**
+   El **Event Loop** es el mecanismo que coordina todo esto. Su trabajo principal es:
+   - Revisar si el **Call Stack** está vacío.
+   - Si está vacío, tomar una tarea de la **MicroTasks Queue** (si hay alguna) y ejecutarla en el **Call Stack**.
+   - Si no hay nada en la **MicroTasks Queue**, toma una tarea de la **Callback Queue** y la pasa al **Call Stack**.
+
+   Es un ciclo que siempre está verificando si el **Call Stack** está libre para poder ejecutar más funciones o tareas asíncronas.
+
+---
+
+### Flujo de Ejecución:
+1. **Sincrónico:**
+   - Las funciones entran en el **Call Stack** y se ejecutan una tras otra (de arriba hacia abajo).
+   - Si una función sincrónica termina, se elimina del **Call Stack**.
+
+2. **Asíncrono:**
+   - Cuando llamas a una función asíncrona (por ejemplo, una promesa o un `setTimeout`), esta se delega a las **Web APIs**.
+   - La función asíncrona se ejecuta en segundo plano (fuera del **Call Stack**).
+   - Cuando la operación asíncrona termina (por ejemplo, un evento `onClick` o una respuesta HTTP), se coloca una tarea en la **Callback Queue** o en la **MicroTasks Queue**.
+   - El **Event Loop** revisa si el **Call Stack** está vacío. Si lo está, toma la siguiente tarea de la **MicroTasks Queue** o la **Callback Queue** y la pasa al **Call Stack** para ejecutarla.
+
+---
+
+### Ejemplo:
+Imagina que llamas a `console.log("Start")`, luego a `setTimeout`, y luego a `console.log("End")`. Aquí está lo que ocurre:
+
+1. **`console.log("Start")`** se ejecuta inmediatamente y entra al **Call Stack**.
+2. La función **`setTimeout`** es delegada a las **Web APIs** para que espere, digamos, 2 segundos.
+3. **`console.log("End")`** se ejecuta inmediatamente después.
+4. Mientras el **Call Stack** se vacía, el **setTimeout** sigue esperando en las **Web APIs**.
+5. Después de los 2 segundos, la tarea de **`setTimeout`** pasa a la **Callback Queue**.
+6. El **Event Loop** mueve esta tarea al **Call Stack** cuando está libre, y se ejecuta la función que habías pasado a `setTimeout`.
+
+---
+
+Espero que esta explicación te ayude a entender cómo interactúan todos estos elementos en JavaScript para gestionar las tareas sincrónicas y asíncronas. Si tienes más preguntas o necesitas más detalles, ¡no dudes en preguntar!

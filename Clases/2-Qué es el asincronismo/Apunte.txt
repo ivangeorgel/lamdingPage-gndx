@@ -1,0 +1,9 @@
+Java script es un lenguaje sincrono y que solo utiliza un solo hilo para trabajar
+
+█████████████████████████████
+songle-threades un solo hilo
+█████████████████████████████
+
+
+
+Bloqueante

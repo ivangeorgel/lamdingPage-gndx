@@ -1,0 +1,134 @@
+¡Entendamos este código paso a paso! Este código realiza una solicitud HTTP utilizando el módulo `xmlhttprequest` en Node.js, con el objetivo de obtener datos de una API (en este caso, la API de EscuelaJS). 
+
+Voy a desglosarlo en partes y te explicaré cada función, propiedad, y cómo interactúan entre sí.
+
+### 1. **Iniciar con `require` y la constante `API`**
+```javascript
+const XMLHttpRequest = require('xmlhttprequest');
+const API = 'https://api.escuelajs.co/api/v1';
+```
+- **`require('xmlhttprequest')`:** En un entorno de Node.js, `require` se utiliza para importar módulos. Aquí se está importando el módulo `xmlhttprequest`, que es necesario para realizar solicitudes HTTP desde Node.js (similar a `XMLHttpRequest` que existe en los navegadores).
+  
+- **`const API`:** Esta constante guarda la URL base de la API que se usará para realizar las solicitudes. No está haciendo nada aún, simplemente está guardando la dirección base de la API.
+
+---
+
+### 2. **La función `fetchData`**
+```javascript
+function fetchData(urlApi, callback) {
+```
+- **`fetchData`:** Esta es una **función** que se encarga de hacer la solicitud HTTP a una API.
+  
+- **Parámetros:**
+  - **`urlApi`:** Es la URL completa a la que queremos hacer la solicitud. Puede incluir el endpoint (ruta específica de la API).
+  - **`callback`:** Es una **función de callback** que se ejecutará una vez que obtengamos una respuesta de la API. Este callback tiene dos parámetros: el error (si ocurre) y los datos que se recibieron.
+
+---
+
+### 3. **Crear el objeto `XMLHttpRequest`**
+```javascript
+  let xhttp = new XMLHttpRequest();
+```
+- Aquí se crea una nueva instancia del objeto `XMLHttpRequest` (abreviado como `xhttp`), que es la pieza clave para realizar solicitudes HTTP.
+
+---
+
+### 4. **Configurar la solicitud HTTP**
+```javascript
+  xhttp.open('GET', urlApi, true);
+```
+- **`xhttp.open()`:** Esta función configura la solicitud HTTP:
+  - **`'GET'`**: Define el **método HTTP** que se usará, en este caso, `GET`, que se utiliza para obtener datos del servidor.
+  - **`urlApi`**: Es la URL completa a la que queremos hacer la solicitud.
+  - **`true`**: Significa que la solicitud será **asíncrona**, lo cual es muy importante para evitar que la aplicación se bloquee mientras espera una respuesta.
+
+---
+
+### 5. **Manejar el cambio de estado (`onreadystatechange`)**
+```javascript
+  xhttp.onreadystatechange = function (event) {
+```
+- **`onreadystatechange`:** Es un **manejador de eventos** que se ejecuta cada vez que cambia el estado de la solicitud HTTP. El objeto `XMLHttpRequest` tiene diferentes **"estados"** a lo largo del ciclo de vida de una solicitud (desde que comienza hasta que se completa).
+
+---
+
+### 6. **Verificar el estado de la solicitud (`readyState`)**
+```javascript
+    if (xhttp.readyState === 4) {
+```
+- **`xhttp.readyState`:** El **estado** actual de la solicitud. Los posibles valores de `readyState` son:
+  1. `0`: No inicializado
+  2. `1`: Conexión establecida
+  3. `2`: La solicitud fue recibida
+  4. **`3`**: Procesando la solicitud
+  5. **`4`**: La solicitud se completó (esto es lo que estamos esperando).
+  
+- Aquí, verificamos si el `readyState` es 4, lo que indica que la respuesta ha llegado y la solicitud está completa.
+
+---
+
+### 7. **Verificar el código de estado HTTP (`status`)**
+```javascript
+      if(xhttp.status === 200) {
+```
+- **`xhttp.status`:** Este es el **código de estado HTTP** que devuelve el servidor. El código 200 significa que la solicitud fue exitosa y que el servidor devolvió la respuesta esperada.
+
+---
+
+### 8. **Llamar al callback en caso de éxito**
+```javascript
+        callback(null, JSON.parse(xhttp.responseText));
+```
+- **`callback(null, ...)`:** Si la solicitud fue exitosa, llamamos al callback pasando dos argumentos:
+  - El primer argumento es `null`, que representa que **no hubo un error**.
+  - El segundo argumento es el **contenido de la respuesta**. `xhttp.responseText` contiene los datos en formato de texto, por lo que usamos `JSON.parse()` para convertirlo en un **objeto JavaScript**.
+  
+Esto es lo que enviamos de vuelta a la función que llamó a `fetchData`.
+
+---
+
+### 9. **Manejar el error**
+```javascript
+      } else {
+        const error = new Error('Error' + urlApi);
+        return callback(error, null);
+      }
+```
+- **Si la solicitud falla** (es decir, si el código de estado HTTP no es 200), se crea un nuevo objeto de **Error** con un mensaje que incluye la URL de la API.
+  
+- Luego, llamamos al callback con este **error** y con `null` para los datos, ya que no recibimos ninguna respuesta útil.
+
+---
+
+### 10. **Enviar la solicitud**
+```javascript
+  xhttp.send();
+}
+```
+- **`xhttp.send()`:** Finalmente, enviamos la solicitud al servidor. Hasta este punto, todo estaba configurado, pero ahora realmente estamos enviando la solicitud HTTP.
+
+---
+
+### Flujo completo explicado
+1. **Se llama a `fetchData` con una URL y un callback**.
+2. **Se crea una instancia de `XMLHttpRequest`** para manejar la solicitud.
+3. **Se configura la solicitud con `xhttp.open`**, utilizando el método `GET` y la URL proporcionada.
+4. **Se establece una función de manejo de eventos** (`onreadystatechange`) para verificar cuándo la solicitud cambia de estado.
+5. Cuando la solicitud **se completa (`readyState === 4`)**, verificamos si fue exitosa (`status === 200`).
+6. Si fue exitosa, **ejecutamos el callback** con los datos de la API.
+7. Si **hubo un error**, ejecutamos el callback con un objeto de **Error**.
+
+---
+
+### Analogía
+
+Imagina que estás pidiendo comida a un restaurante por teléfono:
+- **`open('GET', urlApi, true)`**: Esto es como marcar el número del restaurante y pedir comida.
+- **`onreadystatechange`**: Cada vez que sucede algo (el teléfono suena, te contestan, te confirman el pedido, etc.), el estado cambia.
+- **`readyState === 4` y `status === 200`**: El pedido está listo y llegó correctamente.
+- **`callback(null, JSON.parse(responseText))`**: El restaurante te entrega la comida (los datos), y ahora puedes disfrutarla.
+- **Error**: Si algo falla (el restaurante está cerrado), recibes un error en lugar de la comida.
+
+---
+
+Este código es un ejemplo clásico de cómo interactuar con una API en un entorno Node.js usando `XMLHttpRequest`. Si algo no quedó claro o tienes más preguntas, no dudes en preguntar. ¡Estoy aquí para ayudarte!
